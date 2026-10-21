@@ -21,13 +21,13 @@ jobs:
           LATEST=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0-alpha")
           echo "Latest tag: $LATEST"
           
-          if echo "$LATEST" | grep -q "alpha\." ; then
+          if [ "$LATEST" = "v1.0-alpha" ]; then
+            VERSION="v1.0-alpha"
+          elif echo "$LATEST" | grep -q "alpha\." ; then
             BASE=$(echo "$LATEST" | sed 's/\.[0-9]*$//')
             NUM=$(echo "$LATEST" | grep -o '[0-9]*$')
             NUM=$((NUM + 1))
             VERSION="${BASE}.${NUM}"
-          elif [ "$LATEST" = "v1.0-alpha" ]; then
-            VERSION="v1.0-alpha.1"
           else
             VERSION="v1.0-alpha"
           fi

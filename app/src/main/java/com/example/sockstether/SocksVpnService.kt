@@ -8,17 +8,16 @@ import android.content.Intent
 import android.net.VpnService
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import java.net.InetSocketAddress
 
 class SocksVpnService : VpnService() {
     private var vpnInterface: ParcelFileDescriptor? = null
     private var running = false
     private var proxyHost = "192.168.49.1"
-    private var proxyPort = 8000
+    private var proxyPort = 1080
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         proxyHost = intent?.getStringExtra("host") ?: "192.168.49.1"
-        proxyPort = intent?.getIntExtra("port", 8000) ?: 8000
+        proxyPort = intent?.getIntExtra("port", 1080) ?: 1080
 
         startForeground(1, createNotification())
         setupVpn()
@@ -38,7 +37,12 @@ class SocksVpnService : VpnService() {
 
         val fd = vpnInterface?.fd ?: -1
         if (fd >= 0) {
-            Tun2socks.start(fd, proxyHost, proxyPort)
+            Thread {
+                val socksServer = "$proxyHost:$proxyPort"
+                val udpgwServer = "$proxyHost:7300"
+                val result = Tun2socks.startTun2socks("fd://$fd", socksServer, udpgwServer)
+                Log.i("SocksVpn", "tun2socks exited with code: $result")
+            }.start()
             Log.i("SocksVpn", "Started tun2socks with fd=$fd, proxy=$proxyHost:$proxyPort")
         } else {
             Log.e("SocksVpn", "Failed to establish VPN interface")

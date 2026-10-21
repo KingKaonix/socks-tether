@@ -9,4 +9,5 @@ object Tun2socks {
     external fun stop()
     external fun isRunning(): Boolean
     external fun testSocks5(host: String, port: Int): Int
+    external fun startTun2socks(tunDev: String, socksServer: String, udpgwServer: String): Int
 }

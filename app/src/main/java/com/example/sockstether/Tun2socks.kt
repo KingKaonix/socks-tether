@@ -8,4 +8,5 @@ object Tun2socks {
     external fun start(fd: Int, proxyHost: String, proxyPort: Int): Int
     external fun stop()
     external fun isRunning(): Boolean
+    external fun testSocks5(host: String, port: Int): Int
 }

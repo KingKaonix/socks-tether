@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.LinearLayout
 
 class MainActivity : Activity() {
     private lateinit var statusText: TextView
@@ -16,18 +17,18 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val layout = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setPadding(32, 32, 32, 32)
         }
 
         hostInput = EditText(this).apply {
-            hint = "Proxy host (e.g. 192.168.49.1)"
+            hint = "SOCKS proxy host"
             setText("192.168.49.1")
         }
         portInput = EditText(this).apply {
-            hint = "Proxy port (e.g. 8000)"
-            setText("8000")
+            hint = "SOCKS proxy port"
+            setText("1080")
             inputType = android.text.InputType.TYPE_CLASS_NUMBER
         }
         val startBtn = Button(this).apply { text = "Start VPN" }
@@ -65,7 +66,7 @@ class MainActivity : Activity() {
 
     private fun startVpn() {
         val host = hostInput.text.toString()
-        val port = portInput.text.toString().toIntOrNull() ?: 8000
+        val port = portInput.text.toString().toIntOrNull() ?: 1080
         val intent = Intent(this, SocksVpnService::class.java).apply {
             putExtra("host", host)
             putExtra("port", port)

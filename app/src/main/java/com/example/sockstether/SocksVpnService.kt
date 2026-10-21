@@ -8,10 +8,7 @@ import android.content.Intent
 import android.net.VpnService
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.net.InetSocketAddress
-import java.net.Socket
 
 class SocksVpnService : VpnService() {
     private var vpnInterface: ParcelFileDescriptor? = null
@@ -39,41 +36,14 @@ class SocksVpnService : VpnService() {
         vpnInterface = builder.establish()
         running = true
 
-        Thread {
-            runVpnLoop()
-        }.start()
-    }
-
-    private fun runVpnLoop() {
-        val vpnFd = vpnInterface?.fileDescriptor ?: return
-        val input = FileInputStream(vpnFd)
-        val output = FileOutputStream(vpnFd)
-        val buffer = ByteArray(32767)
-
-        while (running) {
-            try {
-                val length = input.read(buffer)
-                if (length > 0) {
-                    // Parse IP packet and forward through SOCKS proxy
-                    // This is a simplified version - full implementation
-                    // would parse IP/TCP/UDP headers and handle connections
-                    processPacket(buffer, length, output)
-                }
-            } catch (e: Exception) {
-                Log.e("SocksVpn", "Error reading VPN: ${e.message}")
-                break
-            }
+        val fd = vpnInterface?.fd ?: -1
+        if (fd >= 0) {
+            Tun2socks.start(fd, proxyHost, proxyPort)
+            Log.i("SocksVpn", "Started tun2socks with fd=$fd, proxy=$proxyHost:$proxyPort")
+        } else {
+            Log.e("SocksVpn", "Failed to establish VPN interface")
+            stopSelf()
         }
-    }
-
-    private fun processPacket(buffer: ByteArray, length: Int, output: FileOutputStream) {
-        // Simplified: just log the packet
-        // Full implementation would:
-        // 1. Parse IP header to get destination
-        // 2. Parse TCP/UDP header to get port
-        // 3. Create SOCKS connection to proxyHost:proxyPort
-        // 4. Forward data bidirectionally
-        Log.d("SocksVpn", "Received packet: $length bytes")
     }
 
     private fun createNotification(): Notification {
@@ -89,7 +59,7 @@ class SocksVpnService : VpnService() {
 
         return Notification.Builder(this, channelId)
             .setContentTitle("SocksTether VPN")
-            .setContentText("VPN is active")
+            .setContentText("VPN is active - $proxyHost:$proxyPort")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentIntent(pendingIntent)
             .build()
@@ -97,6 +67,7 @@ class SocksVpnService : VpnService() {
 
     override fun onDestroy() {
         running = false
+        Tun2socks.stop()
         vpnInterface?.close()
         super.onDestroy()
     }

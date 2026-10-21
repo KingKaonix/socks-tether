@@ -297,7 +297,7 @@ class SocksServerService : Service() {
         Log.i(TAG, message)
     }
 
-    fun getConnectionLog(): List<String> {
+    fun getRecentLog(): List<String> {
         synchronized(logLock) {
             return connectionLog.toList()
         }

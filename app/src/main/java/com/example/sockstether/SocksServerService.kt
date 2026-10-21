@@ -84,7 +84,7 @@ class SocksServerService : Service() {
                 0x01 -> { // IPv4
                     val ip = ByteArray(4)
                     input.readFully(ip)
-                    targetHost = "${ip[0] and 0xFF}.${ip[1] and 0xFF}.${ip[2] and 0xFF}.${ip[3] and 0xFF}"
+                    targetHost = "${ip[0].toInt() and 0xFF}.${ip[1].toInt() and 0xFF}.${ip[2].toInt() and 0xFF}.${ip[3].toInt() and 0xFF}"
                 }
                 0x03 -> { // Domain name
                     val len = input.readByte().toInt() and 0xFF
@@ -186,7 +186,7 @@ class SocksServerService : Service() {
         val targetHost: String
         when (atyp) {
             0x01 -> {
-                targetHost = "${data[offset] and 0xFF}.${data[offset+1] and 0xFF}.${data[offset+2] and 0xFF}.${data[offset+3] and 0xFF}"
+                targetHost = "${data[offset].toInt() and 0xFF}.${data[offset+1].toInt() and 0xFF}.${data[offset+2].toInt() and 0xFF}.${data[offset+3].toInt() and 0xFF}"
                 offset += 4
             }
             0x03 -> {

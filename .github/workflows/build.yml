@@ -18,13 +18,10 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          # Get latest tag or start at 1.0-alpha
           LATEST=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0-alpha")
           echo "Latest tag: $LATEST"
           
-          # Parse version and increment
           if echo "$LATEST" | grep -q "alpha\." ; then
-            # Increment patch: v1.0-alpha.1 -> v1.0-alpha.2
             BASE=$(echo "$LATEST" | sed 's/\.[0-9]*$//')
             NUM=$(echo "$LATEST" | grep -o '[0-9]*$')
             NUM=$((NUM + 1))
@@ -36,11 +33,6 @@ jobs:
           fi
           echo "New version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Clone badvpn (tun2socks source)
-        run: |
-          cd app/src/main/cpp
-          git clone --depth 1 https://github.com/ambrop72/badvpn.git badvpn
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
